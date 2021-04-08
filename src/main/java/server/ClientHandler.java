@@ -28,6 +28,7 @@ public class ClientHandler {
                     // цикл аутентифиукаии
                     while (true) {
                         String str = in.readUTF();
+                        server.serverLogger.info("Клиент прислал команду" + str);
                         if (str.startsWith("/auth")) {
                             String[] token = str.split("\\s");
                             if (token.length <3){
@@ -42,13 +43,15 @@ public class ClientHandler {
                                     nickName = newNick;
                                     sendMsg("/authok " + nickName);
                                     server.subscribe(this);
-                                    System.out.println("Клиент " + nickName + " подключился");
+                                    server.serverLogger.info("Клиент " + nickName + " подключился");
                                     break;
                                 } else {
                                     sendMsg("С данной учетной записью уже зашли");
+                                    server.serverLogger.warn("С данной учетной записью уже зашли");
                                 }
                             } else {
                                 sendMsg("Неверный логин / пароль");
+                                server.serverLogger.warn("Неверный логин / пароль");
                             }
                         }
 
@@ -61,8 +64,10 @@ public class ClientHandler {
                                     .registration(token[1], token[2], token[3]);
                             if (isRegistration){
                                 sendMsg("/regok");
+                                server.serverLogger.info("Регистрация успешна");
                             }else {
                                 sendMsg("/regno");
+                                server.serverLogger.warn("Регистрация не успешна");
                             }
                         }
                     }
@@ -70,8 +75,8 @@ public class ClientHandler {
                     //цикл работы
                     while (true) {
                         String str = in.readUTF();
+                        server.serverLogger.info("Клиент прислал сообщение/команду " + str);
                         if (str.startsWith("/")) {
-                            System.out.println(str);
                             if (str.equals("/end")) {
                                 out.writeUTF("/end");
                                 break;
@@ -91,22 +96,25 @@ public class ClientHandler {
                     try {
                         out.writeUTF("/end");
                     } catch (IOException ioException) {
-                        ioException.printStackTrace();
+                        server.serverLogger.error("Ошибка отправки команды /end. "+ioException.getMessage());
+                        //ioException.printStackTrace();
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
-                    System.out.println("Клиент отключился");
+                    server.serverLogger.info("Клиент отключился");
                     server.unsubscribe(this);
                     try {
                         socket.close();
                     } catch (IOException ioException) {
-                        ioException.printStackTrace();
+                        server.serverLogger.error(ioException.getMessage());
+                        //ioException.printStackTrace();
                     }
                 }
             }).start();
         } catch (IOException e) {
-            e.printStackTrace();
+            server.serverLogger.error(e.getMessage());
+            //e.printStackTrace();
         }
 
     }
@@ -115,7 +123,8 @@ public class ClientHandler {
         try {
             out.writeUTF(msg);
         } catch (IOException e) {
-            e.printStackTrace();
+            server.serverLogger.error("Ошибка отправки сообщения. "+e.getMessage());
+            //e.printStackTrace();
         }
     }
 
