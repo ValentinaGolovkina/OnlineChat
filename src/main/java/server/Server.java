@@ -1,5 +1,7 @@
 package server;
 
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -9,6 +11,8 @@ import java.util.List;
 import java.util.Vector;
 
 public class Server{
+
+    public final Logger serverLogger = Logger.getLogger("rootLogger");
 
     SimpleDateFormat formater = new SimpleDateFormat("HH:mm:ss");
     List<ClientHandler> clients;
@@ -27,11 +31,11 @@ public class Server{
 
         try {
             server = new ServerSocket(PORT);
-            System.out.println("Сервер запущен");
+            serverLogger.info("Сервер запущен");
 
             while (true) {
                 socket = server.accept();
-                System.out.println("Клиент подключился");
+                serverLogger.info("Клиент подключился");
                 new ClientHandler(this, socket);
             }
 
